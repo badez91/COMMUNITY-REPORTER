@@ -16,17 +16,25 @@ export class ActivityRepository {
   }
 
   static async listByReport(reportId: string) {
-    return prisma.activity.findMany({
-      where: { reportId },
-      orderBy: { createdAt: "desc" },
-    });
+    try {
+      return await prisma.activity.findMany({
+        where: { reportId },
+        orderBy: { createdAt: "desc" },
+      });
+    } catch (error) {
+      throw new Error("Failed to list activities by report");
+    }
   }
 
   static async listRecent(limit = 50) {
-    return prisma.activity.findMany({
-      orderBy: { createdAt: "desc" },
-      take: limit,
-      include: { user: true, report: true },
-    });
+    try {
+      return await prisma.activity.findMany({
+        orderBy: { createdAt: "desc" },
+        take: limit,
+        include: { user: true, report: true },
+      });
+    } catch (error) {
+      throw new Error("Failed to list recent activities");
+    }
   }
 }

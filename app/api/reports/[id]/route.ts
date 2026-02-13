@@ -9,16 +9,23 @@ import { GamificationService } from "@/application/GamificationService";
 
 export async function GET(
   req: Request,
-  context: { params: Promise<{ id: string }> } // params is a Promise
+  context: { params: Promise<{ id: string }> }
 ) {
-  const paramsResolved = await context.params; // unwrap the Promise
-  const { id } = paramsResolved;
-  
-  const report = await ReportRepository.findById(id);
-  if (!report)
-    return NextResponse.json({ error: "Report not found" }, { status: 404 });
+  try {
+    const paramsResolved = await context.params;
+    const { id } = paramsResolved;
+    
+    const report = await ReportRepository.findById(id);
+    if (!report)
+      return NextResponse.json({ error: "Report not found" }, { status: 404 });
 
-  return NextResponse.json(report);
+    return NextResponse.json(report);
+  } catch (error) {
+    return NextResponse.json(
+      { error: "Failed to fetch report" },
+      { status: 500 }
+    );
+  }
 }
 
 export async function PATCH(
@@ -98,22 +105,29 @@ export async function PATCH(
 
 export async function DELETE(
   req: Request,
-  context: { params: Promise<{ id: string }> } // params is a Promise
+  context: { params: Promise<{ id: string }> }
 ) {
-  const paramsResolved = await context.params; // unwrap the Promise
-  const { id } = paramsResolved;
+  try {
+    const paramsResolved = await context.params;
+    const { id } = paramsResolved;
 
-  const session = await getServerSession(authOptions);
-  if (!session?.user?.id)
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    const session = await getServerSession(authOptions);
+    if (!session?.user?.id)
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
-  const report = await ReportRepository.findById(id);
-  if (!report)
-    return NextResponse.json({ error: "Report not found" }, { status: 404 });
+    const report = await ReportRepository.findById(id);
+    if (!report)
+      return NextResponse.json({ error: "Report not found" }, { status: 404 });
 
-  if (report.creatorId !== session.user.id)
-    return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+    if (report.creatorId !== session.user.id)
+      return NextResponse.json({ error: "Forbidden" }, { status: 403 });
 
-  await ReportRepository.delete(id);
-  return NextResponse.json({ success: true });
+    await ReportRepository.delete(id);
+    return NextResponse.json({ success: true });
+  } catch (error) {
+    return NextResponse.json(
+      { error: "Failed to delete report" },
+      { status: 500 }
+    );
+  }
 }

@@ -8,29 +8,36 @@ import { GamificationService } from "@/application/GamificationService";
 export async function POST(req: Request,
   context: { params: Promise<{ id: string }> }
 ) {
-  const { id } = await context.params; // ✅ MUST await
+  try {
+    const { id } = await context.params;
 
-  const session = await getServerSession(authOptions);
+    const session = await getServerSession(authOptions);
 
-  if (!session?.user?.email) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    if (!session?.user?.email) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
+    const user = await prisma.user.upsert({
+      where: { email: session.user.email },
+      update: {},
+      create: {
+        email: session.user.email,
+        name: session.user.name ?? "Anonymous",
+        image: session.user.image ?? "",
+      },
+    });
+
+    const report = await ReportStatusApplicationService.startProgress(id, user.id);
+
+    const newBadges = await GamificationService.addPoints(user.id, 10);
+    return NextResponse.json({
+      report,
+      newBadges,
+    });
+  } catch (error) {
+    return NextResponse.json(
+      { error: "Failed to start progress" },
+      { status: 500 }
+    );
   }
-
-  const user = await prisma.user.upsert({
-    where: { email: session.user.email },
-    update: {},
-    create: {
-      email: session.user.email,
-      name: session.user.name ?? "Anonymous",
-      image: session.user.image ?? "",
-    },
-  });
-
-  const report = await ReportStatusApplicationService.startProgress(id, user.id);
-
-  const newBadges = await GamificationService.addPoints(user.id, 10);
-      return NextResponse.json({
-        report,
-        newBadges,
-      });
 }

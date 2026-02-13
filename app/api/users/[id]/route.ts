@@ -5,18 +5,24 @@ import { NextResponse } from "next/server";
 export async function GET(req: Request,
   context: { params: Promise<{ id: string }> }
 ) {
-  const { id } = await context.params; // ✅ MUST await
+  try {
+    const { id } = await context.params;
 
+    const user = await prisma.user.findUnique({
+      where: { id },
+      include: {
+        badges: { include: { badge: true } },
+        activity: { orderBy: { createdAt: "desc" }, include: { user: true } },
+      },
+    });
 
-  const user = await prisma.user.findUnique({
-    where: { id },
-    include: {
-      badges: { include: { badge: true } },
-      activity: { orderBy: { createdAt: "desc" }, include: { user: true } },
-    },
-  });
+    if (!user) return NextResponse.json({ error: "User not found" }, { status: 404 });
 
-  if (!user) return NextResponse.json({ error: "User not found" }, { status: 404 });
-
-  return NextResponse.json(user);
+    return NextResponse.json(user);
+  } catch (error) {
+    return NextResponse.json(
+      { error: "Failed to fetch user" },
+      { status: 500 }
+    );
+  }
 }

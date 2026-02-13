@@ -5,13 +5,20 @@ export async function PATCH(
   req: Request,
   context: { params: Promise<{ id: string }> }
 ) {
-  const { id } = await context.params;
-  const { hide } = await req.json(); // { hide: true/false }
+  try {
+    const { id } = await context.params;
+    const { hide } = await req.json();
 
-  const report = await prisma.report.update({
-    where: { id },
-    data: { isHidden: hide },
-  });
+    const report = await prisma.report.update({
+      where: { id },
+      data: { isHidden: hide },
+    });
 
-  return NextResponse.json(report);
+    return NextResponse.json(report);
+  } catch (error) {
+    return NextResponse.json(
+      { error: "Failed to update report visibility" },
+      { status: 500 }
+    );
+  }
 }

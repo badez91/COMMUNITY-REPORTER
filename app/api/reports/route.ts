@@ -71,72 +71,79 @@ export async function POST(req: Request) {
 }
 
 export async function GET(req: Request) {
-  const session = await getServerSession(authOptions);
+  try {
+    const session = await getServerSession(authOptions);
 
-  let userId: string | null = null;
+    let userId: string | null = null;
 
-  if (session?.user?.email) {
-    const user = await prisma.user.findUnique({
-      where: { email: session.user.email },
-    });
-    userId = user?.id ?? null;
-  }
-  const url = new URL(req.url);
-  const search = url.searchParams.get("search") || "";
-  const page = Number(url.searchParams.get("page") || 1);
-  const pageSize = Number(url.searchParams.get("pageSize") || 5);
-  const status = url.searchParams.get("status");
-  const category = url.searchParams.get("category");
+    if (session?.user?.email) {
+      const user = await prisma.user.findUnique({
+        where: { email: session.user.email },
+      });
+      userId = user?.id ?? null;
+    }
+    const url = new URL(req.url);
+    const search = url.searchParams.get("search") || "";
+    const page = Number(url.searchParams.get("page") || 1);
+    const pageSize = Number(url.searchParams.get("pageSize") || 5);
+    const status = url.searchParams.get("status");
+    const category = url.searchParams.get("category");
 
-  const where: any = {};
+    const where: any = {};
 
-  if (search) {
-    where.OR = [
-      { title: { contains: search, mode: "insensitive" } },
-      { description: { contains: search, mode: "insensitive" } },
-    ];
-  }
+    if (search) {
+      where.OR = [
+        { title: { contains: search, mode: "insensitive" } },
+        { description: { contains: search, mode: "insensitive" } },
+      ];
+    }
 
-  if (status && status !== "ALL") {
-    where.status = status;
-  }
+    if (status && status !== "ALL") {
+      where.status = status;
+    }
 
-  if (category && category !== "ALL") {
-    where.category = category;
-  }
+    if (category && category !== "ALL") {
+      where.category = category;
+    }
 
-  const [reports, total] = await Promise.all([
-  prisma.report.findMany({
-    where: {
-    isHidden: false,
-    duplicateOf: null,
+    const [reports, total] = await Promise.all([
+    prisma.report.findMany({
+      where: {
+      isHidden: false,
+      duplicateOf: null,
+        },
+      orderBy: { createdAt: "desc" },
+      skip: (page - 1) * pageSize,
+      take: pageSize,
+      include: {
+        follows: true,
+        creator: true,
       },
-    orderBy: { createdAt: "desc" },
-    skip: (page - 1) * pageSize,
-    take: pageSize,
-    include: {
-      follows: true,
-      creator: true,
-    },
-  }),
-  prisma.report.count({ where }),
-]);
+    }),
+    prisma.report.count({ where }),
+  ]);
 
-  const mapped = reports.map((report) => ({
-    id: report.id,
-    title: report.title,
-    description: report.description,
-    status: report.status,
-    category: report.category,
-    createdAt: report.createdAt,
-    creator: report.creator,
-    creatorId: report.creatorId,
-    isFollowing: userId
-      ? report.follows.some((f) => f.userId === userId)
-      : false,
-  }));
+    const mapped = reports.map((report) => ({
+      id: report.id,
+      title: report.title,
+      description: report.description,
+      status: report.status,
+      category: report.category,
+      createdAt: report.createdAt,
+      creator: report.creator,
+      creatorId: report.creatorId,
+      isFollowing: userId
+        ? report.follows.some((f) => f.userId === userId)
+        : false,
+    }));
 
-  return NextResponse.json({ reports: mapped });
+    return NextResponse.json({ reports: mapped });
+  } catch (error) {
+    return NextResponse.json(
+      { error: "Failed to fetch reports" },
+      { status: 500 }
+    );
+  }
 }
 
 

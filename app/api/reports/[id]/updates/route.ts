@@ -9,52 +9,59 @@ import { rateLimit } from "@/lib/rateLimiter";
 type Props = { params: { id: string } | Promise<{ id: string }> };
 
 export async function POST(req: Request, context: Props) {
-  // If params is a Promise (Next.js 16+), unwrap it
-  const paramsResolved = context.params instanceof Promise ? await context.params : context.params;
-  const reportId = paramsResolved.id;
+  try {
+    // If params is a Promise (Next.js 16+), unwrap it
+    const paramsResolved = context.params instanceof Promise ? await context.params : context.params;
+    const reportId = paramsResolved.id;
 
-  const session = await getServerSession(authOptions);
-  if (!session?.user?.id) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-  }
+    const session = await getServerSession(authOptions);
+    if (!session?.user?.id) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
 
-  const identifier =
-    session.user.email ||
-    req.headers.get("x-forwarded-for") ||
-    "anon";
+    const identifier =
+      session.user.email ||
+      req.headers.get("x-forwarded-for") ||
+      "anon";
 
-  const { allowed, remainingTime } = rateLimit(
-    `comment:${identifier}`,
-    5,
-    60_000
-  );
+    const { allowed, remainingTime } = rateLimit(
+      `comment:${identifier}`,
+      5,
+      60_000
+    );
 
-  if (!allowed) {
-    return NextResponse.json(
-      {
-        error: "Too many comments. Slow down.",
-        retryAfter: Math.ceil((remainingTime || 0) / 1000),
+    if (!allowed) {
+      return NextResponse.json(
+        {
+          error: "Too many comments. Slow down.",
+          retryAfter: Math.ceil((remainingTime || 0) / 1000),
+        },
+        { status: 429 }
+      );
+    }
+
+    const body = await req.json();
+    const message = body?.message?.trim();
+
+    if (!message) {
+      return NextResponse.json({ error: "Message is required" }, { status: 400 });
+    }
+
+    // Create activity/update for the report
+    const activity = await prisma.activity.create({
+      data: {
+        message,
+        reportId,
+        userId: session.user.id,
+        type: ActivityType.COMMENT_ADDED,
       },
-      { status: 429 }
+    });
+
+    return NextResponse.json(activity, { status: 201 });
+  } catch (error) {
+    return NextResponse.json(
+      { error: "Failed to create update" },
+      { status: 500 }
     );
   }
-
-  const body = await req.json();
-  const message = body?.message?.trim();
-
-  if (!message) {
-    return NextResponse.json({ error: "Message is required" }, { status: 400 });
-  }
-
-  // Create activity/update for the report
-  const activity = await prisma.activity.create({
-    data: {
-      message,
-      reportId,
-      userId: session.user.id,
-      type: ActivityType.COMMENT_ADDED, // <-- REQUIRED field
-    },
-  });
-
-  return NextResponse.json(activity, { status: 201 });
 }
