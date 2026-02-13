@@ -1,0 +1,152 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum ReportStatus {
+  OPEN
+  ACKNOWLEDGED
+  IN_PROGRESS
+  CLOSED_REQUESTED
+  CLOSED
+}
+
+
+enum ActivityType {
+  REPORT_CREATED
+  STATUS_CHANGED
+  COMMENT_ADDED
+  CLOSE_CONFIRMED
+  REPORT_IN_PROGRESS
+  REPORT_CLOSED
+  REPORT_CONFIRMED_CLOSE
+  REPORT_UNFOLLOWED
+  REPORT_FOLLOWED
+}
+
+enum Role {
+  USER
+  ADMIN
+}
+
+model User {
+  id          String   @id @default(cuid())
+  email       String   @unique
+  emailVerified DateTime?
+  name        String?
+  image       String?
+  points      Int      @default(0)
+
+  reports     Report[]
+  follows     Follow[]
+  badges      UserBadge[]
+  closeConfirmations CloseConfirmation[]
+  activity    Activity[]
+
+  role        Role   @default(USER)
+  isBanned    Boolean @default(false)
+
+  createdAt   DateTime @default(now())
+}
+
+model Report {
+  id          String   @id @default(cuid())
+  title       String
+  description String
+  category    String
+  status      ReportStatus   @default(OPEN)
+
+  creatorId   String
+  creator     User     @relation(fields: [creatorId], references: [id])
+
+  follows     Follow[]
+  confirmations CloseConfirmation[]
+  activity    Activity[]
+
+  isHidden     Boolean @default(false)
+  isLocked     Boolean @default(false)
+  duplicateOf  String?
+  flagged      Int      @default(0)      // number of flags
+
+  createdAt   DateTime @default(now())
+}
+
+model Follow {
+  id          String   @id @default(cuid())
+  userId      String
+  reportId    String
+
+  user        User     @relation(fields: [userId], references: [id])
+  report      Report   @relation(fields: [reportId], references: [id])
+
+  @@unique([userId, reportId])
+}
+
+model Badge {
+  id          String   @id @default(cuid())
+  code        String   @unique
+  name        String
+  icon        String
+
+  userBadges  UserBadge[]
+}
+
+model UserBadge {
+  id          String   @id @default(cuid())
+  userId      String
+  badgeId     String
+
+  user        User     @relation(fields: [userId], references: [id])
+  badge       Badge    @relation(fields: [badgeId], references: [id])
+
+  @@unique([userId, badgeId])
+}
+
+model CloseConfirmation {
+  id        String   @id @default(cuid())
+  reportId  String
+  userId    String
+
+  report    Report  @relation(fields: [reportId], references: [id])
+  user      User    @relation(fields: [userId], references: [id])
+
+  @@unique([reportId, userId])
+}
+
+model Activity {
+  id        String   @id @default(cuid())
+  reportId  String
+  userId    String
+  type      ActivityType    
+  message   String
+  createdAt DateTime @default(now())
+
+  report    Report   @relation(fields: [reportId], references: [id])
+  user      User     @relation(fields: [userId], references: [id])
+}
+
+model RateLimit {
+  id        String @id @default(cuid())
+  userId    String
+  action    String
+  createdAt DateTime @default(now())
+}
+
+model Flag {
+  id        String @id @default(cuid())
+  reportId  String?
+  activityId String?
+  userId    String
+  reason    String
+  createdAt DateTime @default(now())
+}
