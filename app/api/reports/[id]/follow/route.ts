@@ -35,10 +35,12 @@ export async function POST(req: Request,
   return NextResponse.json(follow, { status: 201 });
 }
 
-export async function DELETE(req: Request, { params }: Props) {
-  const session = await getServerSession(authOptions);
-  const { id } = await params;
+export async function DELETE(req: Request,
+  context: { params: Promise<{ id: string }> }
+) {
+  const { id } = await context.params; // ✅ MUST await
 
+  const session = await getServerSession(authOptions);
   if (!session?.user?.email) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
