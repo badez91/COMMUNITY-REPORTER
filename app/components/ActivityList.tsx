@@ -1,7 +1,10 @@
-import { Activity } from "@prisma/client";
+import { Activity,User } from "@prisma/client";
 
+type ActivityWithUser = Activity & {
+  user?: User | null;
+};
 type Props = {
-  activities: Activity[];
+  activities: ActivityWithUser[];
 };
 
 export default function ActivityList({ activities }: Props) {
