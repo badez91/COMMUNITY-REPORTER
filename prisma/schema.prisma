@@ -65,6 +65,12 @@ model Report {
   description String
   category    String
   status      ReportStatus   @default(OPEN)
+  
+  // Optional features
+  photoUrl    String?  // Photo upload
+  latitude    Float?   // Location
+  longitude   Float?   // Location
+  address     String?  // Human-readable address
 
   creatorId   String
   creator     User     @relation(fields: [creatorId], references: [id])

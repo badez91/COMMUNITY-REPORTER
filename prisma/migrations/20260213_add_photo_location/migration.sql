@@ -1,0 +1,5 @@
+-- AlterTable
+ALTER TABLE "Report" ADD COLUMN "photoUrl" TEXT,
+ADD COLUMN "latitude" DOUBLE PRECISION,
+ADD COLUMN "longitude" DOUBLE PRECISION,
+ADD COLUMN "address" TEXT;
