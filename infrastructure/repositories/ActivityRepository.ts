@@ -6,7 +6,7 @@ export class ActivityRepository {
   static create(
     tx: Prisma.TransactionClient,
     data: {
-      type: string; // Or ActivityType
+      type: ActivityType;
       userId: string;
       reportId: string;
       message: string;
