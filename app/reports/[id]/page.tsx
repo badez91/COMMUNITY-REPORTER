@@ -68,6 +68,36 @@ export default async function ReportDetailPage({ params }: Props) {
         <p className="text-gray-700 leading-relaxed">{report.description}</p>
       </div>
 
+      {/* Photo (if available) */}
+      {report.photoUrl && (
+        <div className="border border-gray-300 rounded-xl overflow-hidden">
+          <img 
+            src={report.photoUrl} 
+            alt="Report photo" 
+            className="w-full h-auto max-h-96 object-cover"
+            onError={(e) => {
+              (e.target as HTMLImageElement).style.display = 'none';
+            }}
+          />
+        </div>
+      )}
+
+      {/* Location (if available) */}
+      {(report.latitude && report.longitude) && (
+        <div className="border border-gray-300 rounded-xl p-4 bg-gray-50">
+          <h3 className="font-semibold mb-2">📍 Location</h3>
+          {report.address && <p className="text-sm text-gray-600 mb-2">{report.address}</p>}
+          <a
+            href={`https://www.google.com/maps?q=${report.latitude},${report.longitude}`}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-blue-600 hover:underline text-sm"
+          >
+            View on Google Maps →
+          </a>
+        </div>
+      )}
+
       {/* Updates / activity */}
       <div className="mt-4">
         <h2 className="font-semibold text-lg mb-2">Activity & Updates</h2>
