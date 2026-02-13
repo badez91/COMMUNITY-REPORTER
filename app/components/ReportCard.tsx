@@ -71,7 +71,7 @@ export default function ReportCard({ report, onActionComplete }: Props) {
   };
 
   return (
-    <div className="bg-white rounded-2xl border border-gray-200 p-6 shadow-sm hover:shadow-md transition space-y-4">
+    <div className="bg-white rounded-2xl border border-gray-200 p-6 shadow-sm hover:shadow-lg hover:border-blue-300 transition-all duration-200 space-y-4">
 
       {/* ===== TITLE SECTION (NO BORDER) ===== */}
       <div>

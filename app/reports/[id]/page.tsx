@@ -64,7 +64,9 @@ export default async function ReportDetailPage({ params }: Props) {
       </div>
 
       {/* Description */}
-      <p className="text-gray-700">{report.description}</p>
+      <div className="border border-gray-300 rounded-xl p-4 bg-gray-50">
+        <p className="text-gray-700 leading-relaxed">{report.description}</p>
+      </div>
 
       {/* Updates / activity */}
       <div className="mt-4">

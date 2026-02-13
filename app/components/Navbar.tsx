@@ -76,6 +76,15 @@ export default function Navbar() {
               </span>
             </Link>
 
+            {session.user?.role === "ADMIN" && (
+              <Link
+                href="/admin"
+                className="px-3 py-1 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition text-sm"
+              >
+                Admin
+              </Link>
+            )}
+
             <button
               onClick={() => signOut()}
               className="text-gray-500 hover:text-red-600 transition text-xl"
