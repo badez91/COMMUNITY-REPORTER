@@ -23,8 +23,10 @@ export async function GET(
 
 export async function PATCH(
   req: Request,
-  { params }: { params: { id: string } }
+  context: { params: Promise<{ id: string }> }
 ) {
+  const { id } = await context.params; // ✅ MUST await
+
   const session = await getServerSession(authOptions);
 
   if (!session?.user?.email) {
@@ -49,7 +51,7 @@ export async function PATCH(
     switch (status) {
       case "ACKNOWLEDGED":
         report = await ReportStatusApplicationService.acknowledge(
-          params.id,
+          id,
           user.id
         );
         const newBadges = await GamificationService.addPoints(user.id, 10);
@@ -61,14 +63,14 @@ export async function PATCH(
 
       case "IN_PROGRESS":
         report = await ReportStatusApplicationService.startProgress(
-          params.id,
+          id,
           user.id
         );
         break;
 
       case "CLOSED":
         report = await ReportStatusApplicationService.confirmClose(
-          params.id,
+          id,
           user.id
         );
         break;

@@ -2,8 +2,10 @@
 import { prisma } from "@/lib/prisma";
 import { NextResponse } from "next/server";
 
-export async function GET(req: Request, { params }: any) {
-  const { id } = params;
+export async function GET(req: Request,
+  context: { params: Promise<{ id: string }> }
+) {
+  const { id } = await context.params; // ✅ MUST await
   const url = new URL(req.url);
   const page = Number(url.searchParams.get("page") || 1);
   const pageSize = Number(url.searchParams.get("pageSize") || 5);
