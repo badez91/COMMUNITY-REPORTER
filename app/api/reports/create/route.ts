@@ -15,6 +15,13 @@ export async function POST(req: Request) {
     const body = await req.json();
     const { title, description, category } = body;
 
+    if (!title || !description || !category) {
+      return NextResponse.json(
+        { error: "Title, description, and category are required" },
+        { status: 400 }
+      );
+    }
+
     // Anti-spam: check last report
     const lastReport = await prisma.report.findFirst({
       where: { creatorId: userId },

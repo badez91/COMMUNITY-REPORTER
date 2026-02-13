@@ -17,9 +17,10 @@ export async function GET(req: Request,
   try {
     const reports = await prisma.report.findMany({
       where: {
-      isHidden: false,
-      duplicateOf: null,
-        },
+        ...where,
+        isHidden: false,
+        duplicateOf: null,
+      },
       orderBy: { createdAt: "desc" },
       skip: (page - 1) * pageSize,
       take: pageSize,

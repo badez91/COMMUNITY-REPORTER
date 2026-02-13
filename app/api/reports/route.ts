@@ -109,9 +109,10 @@ export async function GET(req: Request) {
     const [reports, total] = await Promise.all([
     prisma.report.findMany({
       where: {
-      isHidden: false,
-      duplicateOf: null,
-        },
+        ...where,
+        isHidden: false,
+        duplicateOf: null,
+      },
       orderBy: { createdAt: "desc" },
       skip: (page - 1) * pageSize,
       take: pageSize,
@@ -120,7 +121,11 @@ export async function GET(req: Request) {
         creator: true,
       },
     }),
-    prisma.report.count({ where }),
+    prisma.report.count({ where: {
+      ...where,
+      isHidden: false,
+      duplicateOf: null,
+    } }),
   ]);
 
     const mapped = reports.map((report) => ({

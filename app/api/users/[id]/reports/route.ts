@@ -20,11 +20,12 @@ export async function GET(
   try {
     const reports = await prisma.report.findMany({
       where: {
-      isHidden: false,
-      duplicateOf: null,
-        },
+        ...where,
+        isHidden: false,
+        duplicateOf: null,
+      },
       include: {
-        creator: true, // optional but good to keep consistent
+        creator: true,
       },
       orderBy: { createdAt: "desc" },
       skip: (page - 1) * pageSize,
