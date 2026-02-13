@@ -57,20 +57,26 @@ export default function HomePage() {
 
       {/* Filters */}
       <div className="flex flex-wrap gap-3">
-        {["ALL", "OPEN", "ACKNOWLEDGED", "IN_PROGRESS", "CLOSED"].map((s) => (
+        {[
+          { value: "ALL", label: "All" },
+          { value: "OPEN", label: "Open" },
+          { value: "ACKNOWLEDGED", label: "Acknowledged" },
+          { value: "IN_PROGRESS", label: "In Progress" },
+          { value: "CLOSED", label: "Closed" },
+        ].map((s) => (
           <button
-            key={s}
+            key={s.value}
             onClick={() => {
               setPage(1);
-              setStatus(s);
+              setStatus(s.value);
             }}
-            className={`px-3 py-1 rounded-full text-sm ${
-              status === s
+            className={`px-3 py-1 rounded-full text-sm transition ${
+              status === s.value
                 ? "bg-blue-600 text-white"
                 : "bg-gray-200 hover:bg-gray-300"
             }`}
           >
-            {s.replace("_", " ")}
+            {s.label}
           </button>
         ))}
 
