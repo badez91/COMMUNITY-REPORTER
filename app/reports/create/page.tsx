@@ -101,14 +101,30 @@ export default function CreateReportPage() {
         
         {/* Optional: Photo URL */}
         <div>
-          <label className="block text-sm font-medium mb-1">Photo URL (Optional)</label>
+          <label className="block text-sm font-medium mb-1">Photo (Optional)</label>
+          <input
+            type="file"
+            accept="image/*"
+            className="w-full p-2 border rounded"
+            onChange={async (e) => {
+              const file = e.target.files?.[0];
+              if (!file) return;
+              
+              // Convert to base64 for simple storage
+              const reader = new FileReader();
+              reader.onloadend = () => {
+                setForm({ ...form, photoUrl: reader.result as string });
+              };
+              reader.readAsDataURL(file);
+            }}
+          />
+          <p className="text-xs text-gray-500 mt-1">Or paste a photo URL:</p>
           <input
             placeholder="https://example.com/photo.jpg"
-            className="w-full p-2 border rounded"
+            className="w-full p-2 border rounded mt-1"
             value={form.photoUrl || ""}
             onChange={(e) => handleChange("photoUrl", e.target.value)}
           />
-          <p className="text-xs text-gray-500 mt-1">Paste a photo URL from any image hosting service</p>
         </div>
 
         {/* Optional: Location */}
