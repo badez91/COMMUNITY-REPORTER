@@ -8,9 +8,10 @@ type Props = {
   params: { id: string };
 };
 
-export async function POST(req: Request, { params }: Props) {
-
-  const { id } = await params;
+export async function POST(req: Request,
+  context: { params: Promise<{ id: string }> }
+) {
+  const { id } = await context.params; // ✅ MUST await
   const session = await getServerSession(authOptions);
 
   if (!session?.user?.email) {
