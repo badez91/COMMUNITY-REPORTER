@@ -38,12 +38,12 @@ export default async function ProfilePage() {
     <div className="max-w-5xl mx-auto p-6 space-y-6">
       <h1 className="text-3xl font-bold mb-4">Profile</h1>
 
-      {session.user.role =="ADMIN" && (
+      {session.user.role === "ADMIN" && (
         <Link
           href="/admin"
-          className="px-3 py-1 bg-red-500 text-white rounded hover:bg-red-600"
+          className="inline-block px-3 py-1 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition text-sm"
         >
-          Admin Dashboard
+          Admin
         </Link>
       )}
 
