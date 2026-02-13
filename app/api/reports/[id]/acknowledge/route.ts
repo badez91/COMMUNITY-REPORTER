@@ -5,7 +5,11 @@ import { prisma } from "@/lib/prisma";
 import { ReportStatusApplicationService } from "@/application/ReportStatusApplicationService";
 import { GamificationService } from "@/application/GamificationService";
 
-export async function POST(req: Request, { params }: { params: { id: string } }) {
+export async function POST(req: Request,
+  context: { params: Promise<{ id: string }> }
+) {
+  const { id } = await context.params; // ✅ MUST await
+
   const session = await getServerSession(authOptions);
 
   if (!session?.user?.email) {
@@ -22,7 +26,7 @@ export async function POST(req: Request, { params }: { params: { id: string } })
     },
   });
 
-  const report = await ReportStatusApplicationService.acknowledge(params.id, user.id);
+  const report = await ReportStatusApplicationService.acknowledge(id, user.id);
 
   const newBadges = await GamificationService.addPoints(user.id, 10);
   return NextResponse.json({
