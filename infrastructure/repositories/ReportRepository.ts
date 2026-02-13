@@ -25,39 +25,58 @@ export class ReportRepository {
         })
     }
 
-    static countByUser(userId: string) {
-        // return prisma.report.count({creatorId: userId})
-        return prisma.report.count({
-            where: {creatorId: userId},
-        });
+    static async countByUser(userId: string) {
+        try {
+            return await prisma.report.count({
+                where: {creatorId: userId},
+            });
+        } catch (error) {
+            throw new Error("Failed to count user reports");
+        }
     }
 
-    static findById(id: string) {
-    return prisma.report.findUnique({ where: { id } });
-  }
+    static async findById(id: string) {
+        try {
+            return await prisma.report.findUnique({ where: { id } });
+        } catch (error) {
+            throw new Error("Failed to find report");
+        }
+    }
 
-  static updateStatus(id: string, status: ReportStatus) {
-    return prisma.report.update({ where: { id }, data: { status } });
-  }
+    static async updateStatus(id: string, status: ReportStatus) {
+        try {
+            return await prisma.report.update({ where: { id }, data: { status } });
+        } catch (error) {
+            throw new Error("Failed to update report status");
+        }
+    }
 
-  // Delete method
-  static async delete(id: string) {
-    // Optional: remove related data first if necessary
-    await prisma.closeConfirmation.deleteMany({ where: { reportId: id } });
-    await prisma.follow.deleteMany({ where: { reportId: id } });
+    // Delete method
+    static async delete(id: string) {
+        try {
+            // Optional: remove related data first if necessary
+            await prisma.closeConfirmation.deleteMany({ where: { reportId: id } });
+            await prisma.follow.deleteMany({ where: { reportId: id } });
 
-    return prisma.report.delete({ where: { id } });
-  }
+            return await prisma.report.delete({ where: { id } });
+        } catch (error) {
+            throw new Error("Failed to delete report");
+        }
+    }
 
-  // fetch many reports with relations
-  static async findManyWithRelations() {
-    return prisma.report.findMany({
-      where: {
-    isHidden: false,
-    duplicateOf: null,
-      },
-      include: { creator: true, confirmations: true, follows: true },
-      orderBy: { createdAt: "desc" },
-    });
-  }
+    // fetch many reports with relations
+    static async findManyWithRelations() {
+        try {
+            return await prisma.report.findMany({
+                where: {
+                    isHidden: false,
+                    duplicateOf: null,
+                },
+                include: { creator: true, confirmations: true, follows: true },
+                orderBy: { createdAt: "desc" },
+            });
+        } catch (error) {
+            throw new Error("Failed to find reports");
+        }
+    }
 }

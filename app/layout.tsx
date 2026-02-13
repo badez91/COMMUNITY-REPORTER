@@ -9,7 +9,12 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en">
-      <body className="bg-gray-50 min-h-screen">
+      <head>
+        <link rel="manifest" href="/manifest.json" />
+        <meta name="theme-color" content="#3b82f6" />
+        <meta name="description" content="Report and track local community issues" />
+      </head>
+      <body className="bg-white min-h-screen">
         <Providers>
           <Navbar />
           <main className="pt-4 max-w-7xl mx-auto px-4">

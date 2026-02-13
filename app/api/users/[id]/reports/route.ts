@@ -17,18 +17,26 @@ export async function GET(
     where.status = status;
   }
 
-  const reports = await prisma.report.findMany({
-    where: {
-    isHidden: false,
-    duplicateOf: null,
+  try {
+    const reports = await prisma.report.findMany({
+      where: {
+        ...where,
+        isHidden: false,
+        duplicateOf: null,
       },
-    include: {
-      creator: true, // optional but good to keep consistent
-    },
-    orderBy: { createdAt: "desc" },
-    skip: (page - 1) * pageSize,
-    take: pageSize,
-  });
+      include: {
+        creator: true,
+      },
+      orderBy: { createdAt: "desc" },
+      skip: (page - 1) * pageSize,
+      take: pageSize,
+    });
 
-  return NextResponse.json({ reports });
+    return NextResponse.json({ reports });
+  } catch (error) {
+    return NextResponse.json(
+      { error: "Failed to fetch reports" },
+      { status: 500 }
+    );
+  }
 }

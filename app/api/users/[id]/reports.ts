@@ -14,15 +14,23 @@ export async function GET(req: Request,
   const where: any = { creatorId: id };
   if (status && status !== "ALL") where.status = status;
 
-  const reports = await prisma.report.findMany({
-    where: {
-    isHidden: false,
-    duplicateOf: null,
+  try {
+    const reports = await prisma.report.findMany({
+      where: {
+        ...where,
+        isHidden: false,
+        duplicateOf: null,
       },
-    orderBy: { createdAt: "desc" },
-    skip: (page - 1) * pageSize,
-    take: pageSize,
-  });
+      orderBy: { createdAt: "desc" },
+      skip: (page - 1) * pageSize,
+      take: pageSize,
+    });
 
-  return NextResponse.json({ reports });
+    return NextResponse.json({ reports });
+  } catch (error) {
+    return NextResponse.json(
+      { error: "Failed to fetch reports" },
+      { status: 500 }
+    );
+  }
 }

@@ -3,6 +3,7 @@ import { NextAuthOptions } from "next-auth";
 import { prisma } from "./prisma";
 
 export const authOptions: NextAuthOptions = {
+  secret: process.env.NEXTAUTH_SECRET,
   providers: [
     GoogleProvider({
       clientId: process.env.GOOGLE_CLIENT_ID!,
@@ -29,16 +30,20 @@ export const authOptions: NextAuthOptions = {
     async jwt({ token }) {
       if (!token.email) return token;
 
-      const dbUser = await prisma.user.findUnique({
-        where: { email: token.email },
-        include: { badges: { include: { badge: true } } },
-      });
+      try {
+        const dbUser = await prisma.user.findUnique({
+          where: { email: token.email },
+          include: { badges: { include: { badge: true } } },
+        });
 
-      if (dbUser) {
-        token.sub = dbUser.id;
-        (token as any).points = dbUser.points;
-        (token as any).badges = dbUser?.badges.map((ub) => ub.badge) ?? [];
-        (token as any).role = dbUser.role;
+        if (dbUser) {
+          token.sub = dbUser.id;
+          (token as any).points = dbUser.points;
+          (token as any).badges = dbUser?.badges.map((ub) => ub.badge) ?? [];
+          (token as any).role = dbUser.role;
+        }
+      } catch (error) {
+        console.error("Error fetching user in JWT callback:", error);
       }
 
       return token;
