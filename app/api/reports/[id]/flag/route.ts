@@ -40,20 +40,27 @@ export async function POST(
     );
   }
 
-  const updated = await prisma.report.update({
-    where: { id },
-    data: {
-      flagged: { increment: 1 },
-    },
-  });
-
-  // Auto-hide logic
-  if (updated.flagged >= AUTO_HIDE_THRESHOLD) {
-    await prisma.report.update({
+  try {
+    const updated = await prisma.report.update({
       where: { id },
-      data: { isHidden: true },
+      data: {
+        flagged: { increment: 1 },
+      },
     });
-  }
 
-  return NextResponse.json({ success: true, flagged: updated.flagged });
+    // Auto-hide logic
+    if (updated.flagged >= AUTO_HIDE_THRESHOLD) {
+      await prisma.report.update({
+        where: { id },
+        data: { isHidden: true },
+      });
+    }
+
+    return NextResponse.json({ success: true, flagged: updated.flagged });
+  } catch (error) {
+    return NextResponse.json(
+      { error: "Failed to flag report" },
+      { status: 500 }
+    );
+  }
 }

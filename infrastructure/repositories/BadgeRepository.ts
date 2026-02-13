@@ -6,28 +6,36 @@ export class BadgeRepository {
     // }
 
     static async hasBadge(userId: string, badgeCode: string) {
-    return prisma.userBadge.findFirst({
-      where: {
-        userId,
-        badge: {
-          code: badgeCode,
+    try {
+      return await prisma.userBadge.findFirst({
+        where: {
+          userId,
+          badge: {
+            code: badgeCode,
+          },
         },
-      },
-    });
+      });
+    } catch (error) {
+      throw new Error("Failed to check badge");
+    }
   }
 
   static async grantBadge(userId: string, badgeCode: string) {
-    const badge = await prisma.badge.findUnique({
-      where: { code: badgeCode },
-    });
+    try {
+      const badge = await prisma.badge.findUnique({
+        where: { code: badgeCode },
+      });
 
-    if (!badge) return;
+      if (!badge) return;
 
-    return prisma.userBadge.create({
-      data: {
-        userId,
-        badgeId: badge.id,
-      },
-    });
+      return await prisma.userBadge.create({
+        data: {
+          userId,
+          badgeId: badge.id,
+        },
+      });
+    } catch (error) {
+      throw new Error("Failed to grant badge");
+    }
   }
 }
