@@ -9,7 +9,7 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en">
-      <body className="bg-gray-50 min-h-screen">
+      <body className="bg-white min-h-screen">
         <Providers>
           <Navbar />
           <main className="pt-4 max-w-7xl mx-auto px-4">

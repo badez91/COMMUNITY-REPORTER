@@ -7,7 +7,15 @@ export async function PATCH(
 ) {
   try {
     const { id } = await context.params;
-    const { ban } = await req.json();
+    const body = await req.json();
+    const { ban } = body;
+
+    if (typeof ban !== "boolean") {
+      return NextResponse.json(
+        { error: "Invalid ban value" },
+        { status: 400 }
+      );
+    }
 
     const user = await prisma.user.update({
       where: { id },

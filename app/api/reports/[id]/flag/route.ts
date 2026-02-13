@@ -11,36 +11,36 @@ export async function POST(
   req: Request,
   context: { params: Promise<{ id: string }> }
 ) {
-  const { id } = await context.params;
-  const session = await getServerSession(authOptions);
-
-  if (!session?.user?.id) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-  }
-
-  const report = await prisma.report.findUnique({
-    where: { id},
-  });
-
-  if (!report) {
-    return NextResponse.json({ error: "Report not found" }, { status: 404 });
-  }
-
-  if (report.creatorId === session.user.id) {
-    return NextResponse.json(
-      { error: "You cannot flag your own report" },
-      { status: 400 }
-    );
-  }
-
-  if (report.isHidden) {
-    return NextResponse.json(
-      { error: "Report already hidden" },
-      { status: 400 }
-    );
-  }
-
   try {
+    const { id } = await context.params;
+    const session = await getServerSession(authOptions);
+
+    if (!session?.user?.id) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
+    const report = await prisma.report.findUnique({
+      where: { id},
+    });
+
+    if (!report) {
+      return NextResponse.json({ error: "Report not found" }, { status: 404 });
+    }
+
+    if (report.creatorId === session.user.id) {
+      return NextResponse.json(
+        { error: "You cannot flag your own report" },
+        { status: 400 }
+      );
+    }
+
+    if (report.isHidden) {
+      return NextResponse.json(
+        { error: "Report already hidden" },
+        { status: 400 }
+      );
+    }
+
     const updated = await prisma.report.update({
       where: { id },
       data: {
